@@ -1,0 +1,31 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require 'vagrant-aws'
+Vagrant.configure('2') do |config|
+    config.vm.box = 'dummy'
+    config.vm.provider 'aws' do |aws, override|
+	config.vm.network "private_network", type: "dhcp"
+    config.vm.synced_folder ".", "/tmp", type: "rsync" #after configuring this we were able to see file and shell provisioner
+    aws.access_key_id = "XXXXXXXXXXXXXXXXXXXX"
+    aws.secret_access_key = "XXXXXXXXXXXXXX"
+    aws.keypair_name = 'keypair name'
+    aws.instance_type = "t2.micro"
+    aws.region = 'us-east-2'
+    aws.availability_zone = "us-east-2c"
+    aws.ami = 'ami-0d5d9d301c853a04a' #'ami-7747d01e'
+    aws.security_groups =["sg-0351458c629c2e8d0"] # Give your security Group ID
+    aws.subnet_id = "subnet-d4ed6f98"  # find aws.region whereever you want to create VMs
+    override.ssh.username = "ubuntu"
+    override.ssh.private_key_path = "/home/ubuntu/aianalytics.pem"
+  end
+  config.vm.provision "file", source: "/home/ubuntu/file_to_copy.sh", destination: "/tmp/file_to_copy.sh"
+  config.vm.provision "shell",
+    inline: "cp /tmp/file_to_copy.sh /home/ubuntu/file_to_copy.sh"
+  # Configuration for Ansible as Provisioner
+  #config.vm.provision :ansible do |ansible|
+   # ansible.playbook = "site.yml"
+   # ansible.verbose = "v"
+   #  ansible.host_key_checking = false
+   #  ansible.limit = 'all'
+  #end
+end
